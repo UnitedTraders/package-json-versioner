@@ -3,7 +3,7 @@
 import fs, { writeFile, readFile } from 'fs-extra'
 import mkdirp from 'mkdirp'
 
-function copyDistFiles(packageJsonContent, outDir) {
+function copyDistFiles (packageJsonContent, outDir) {
   return new Promise((resolve) => {
     const packageContent = JSON.parse(packageJsonContent)
     if (!packageContent.files) {
@@ -18,7 +18,7 @@ function copyDistFiles(packageJsonContent, outDir) {
   })
 }
 
-function copyPackageJson(outDir) {
+function copyPackageJson (outDir) {
   const pkgJson = `./package.json`
   findFile(pkgJson)
     .then((result) => {
@@ -40,7 +40,7 @@ function copyPackageJson(outDir) {
     })
 }
 
-function substitutePackageJson(outFile, data, options) {
+function substitutePackageJson (outFile, data, options) {
   const obj = JSON.parse(data)
   if (obj.version.toLowerCase().endsWith('snapshot')) {
     obj.version = obj.version + '.' + Date.now()
@@ -52,7 +52,7 @@ function substitutePackageJson(outFile, data, options) {
   })
 }
 
-function findFile(file) {
+function findFile (file) {
   return new Promise((resolve, reject) => {
     readFile(file, 'utf8', (err, result) => {
       if (err) {
@@ -63,7 +63,7 @@ function findFile(file) {
   })
 }
 
-function mkdirPromise(dir) {
+function mkdirPromise (dir) {
   return new Promise((resolve, reject) => {
     mkdirp(dir, (err) => {
       if (err) {
