@@ -1,6 +1,6 @@
 {
   "name": "package-json-versioner",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "copy package.json and substiture version",
   "main": "./lib/index.js",
   "bin": {
@@ -39,6 +39,7 @@
     "standard-version": "^2.4.0"
   },
   "dependencies": {
+    "fs-extra": "^3.0.1",
     "mkdirp": "^0.5.1"
   }
 }

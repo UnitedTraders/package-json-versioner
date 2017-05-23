@@ -1,30 +1,46 @@
 #!/usr/bin/env node
 
-import { writeFile, readFile } from 'fs'
+import fs, { writeFile, readFile } from 'fs-extra'
 import mkdirp from 'mkdirp'
 
-function copyPackageJson(outDir) {
-  try {
-    const pkgJson = `./package.json`
-    findFile(pkgJson).then((result) => {
+function copyDistFiles (packageJsonContent, outDir) {
+  return new Promise((resolve) => {
+    const packageContent = JSON.parse(packageJsonContent)
+    if (!packageContent.files) {
+      throw new Error('\'files\' section doesn\'t present in package.json')
+    }
+    packageContent.files
+      .forEach(file => {
+        fs.copySync('./' + file, outDir + '/' + file)
+      })
+
+    resolve()
+  })
+}
+
+function copyPackageJson (outDir) {
+  const pkgJson = `./package.json`
+  findFile(pkgJson)
+    .then((result) => {
       const outFolder = `${outDir}`
       const outFile = `${outDir}/package.json`
 
-      mkdirPromise(outFolder).then(() => {
-        console.log(`${pkgJson} -> ${outFile}`)
-        substitutePackageJson(outFile, result.result)
-      }).catch((err) => {
-        throw err
-      })
-    }).catch(err => {
-      throw err
+      return mkdirPromise(outFolder)
+        .then(() => {
+          return copyDistFiles(result.result, outDir)
+        })
+        .then(() => {
+          console.log(`${pkgJson} -> ${outFile}`)
+          substitutePackageJson(outFile, result.result)
+        })
     })
-  } catch (err) {
-    throw err
-  }
+    .catch(err => {
+      console.error(`Error occured ${err}`)
+      process.exit(1)
+    })
 }
 
-function substitutePackageJson(outFile, data, options) {
+function substitutePackageJson (outFile, data, options) {
   const obj = JSON.parse(data)
   if (obj.version.toLowerCase().endsWith('snapshot')) {
     obj.version = obj.version + '.' + Date.now()
@@ -36,7 +52,7 @@ function substitutePackageJson(outFile, data, options) {
   })
 }
 
-function findFile(file) {
+function findFile (file) {
   return new Promise((resolve, reject) => {
     readFile(file, 'utf8', (err, result) => {
       if (err) {
@@ -47,19 +63,24 @@ function findFile(file) {
   })
 }
 
-const mkdirPromise = dir => new Promise((resolve, reject) => {
-  mkdirp(dir, (err) => {
-    if (err) {
-      reject(err)
-    } else {
+function mkdirPromise (dir) {
+  return new Promise((resolve, reject) => {
+    mkdirp(dir, (err) => {
+      if (err) {
+        reject(err)
+        return
+      }
+
       resolve({dir})
-    }
+    })
   })
-})
+}
 
 if (process.argv.length < 3) {
   console.log(`Usage: ${process.argv[1]} <destination-dir>`)
   process.exit(-1)
 }
 
-copyPackageJson(process.argv[2])
+const tempPublishDir = process.argv[2]
+
+copyPackageJson(tempPublishDir)
